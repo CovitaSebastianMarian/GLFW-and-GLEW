@@ -1,0 +1,10 @@
+﻿  main.cpp
+C:\Users\Junior\OneDrive\Desktop\GLFW 2022\GLFW 2022\main.cpp(79,41): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\Junior\OneDrive\Desktop\GLFW 2022\GLFW 2022\main.cpp(81,28): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\Junior\OneDrive\Desktop\GLFW 2022\GLFW 2022\main.cpp(90,45): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+C:\Users\Junior\OneDrive\Desktop\GLFW 2022\GLFW 2022\main.cpp(93,24): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\Junior\OneDrive\Desktop\GLFW 2022\GLFW 2022\main.cpp(96,23): warning C4305: '=': truncation from 'double' to 'float'
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\Junior\OneDrive\Desktop\GLFW 2022\Debug\vc120.pdb'; linking object as if no debug info
+  GLFW 2022.vcxproj -> C:\Users\Junior\OneDrive\Desktop\GLFW 2022\Debug\GLFW 2022.exe

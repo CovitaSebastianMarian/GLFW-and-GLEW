@@ -1,0 +1,9 @@
+﻿  main.cpp
+main.obj : error LNK2001: unresolved external symbol _glfwSwapBuffers
+main.obj : error LNK2001: unresolved external symbol _glfwTerminate
+main.obj : error LNK2001: unresolved external symbol _glfwPollEvents
+main.obj : error LNK2001: unresolved external symbol _glfwInit
+main.obj : error LNK2001: unresolved external symbol _glfwCreateWindow
+main.obj : error LNK2001: unresolved external symbol _glfwMakeContextCurrent
+main.obj : error LNK2001: unresolved external symbol _glfwWindowShouldClose
+C:\Users\Junior\OneDrive\Desktop\GLFW 2022\Release\GLFW 2022.exe : fatal error LNK1120: 7 unresolved externals
