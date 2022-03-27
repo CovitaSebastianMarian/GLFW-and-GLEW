@@ -19,10 +19,10 @@ void reshape(GLFWwindow* window) {
 }
 
 
-bool HoverCircle(double x, double y, double xpos, double ypos) {
+bool HoverCircle(double x, double y, double xpos, double ypos, double xsize, double ysize) {
     for (int i = 0; i < 360; ++i) {
         double delta = i * PI / 180;
-        if (abs(x - xpos) <= abs(cos(delta) * 200) && abs(y - ypos) <= abs(sin(delta) * 200)) {
+        if (abs(x - xpos) <= abs(cos(delta) * xsize) && abs(y - ypos) <= abs(sin(delta) * ysize)) {
             return true;
         }
     }
@@ -35,8 +35,12 @@ void mouse(GLFWwindow* windwo, int button, int actions, int mods) {
        
     }
 }
+float r = 0.8;
 void motion(GLFWwindow* window, double x, double y) {
-    if (HoverCircle(x, y, wwindowsize / 2, hwindowsize / 2)) cout << x << " " << y << endl;
+    if (HoverCircle(x, y, wwindowsize / 2, hwindowsize / 2, 400, 100)) {
+        r = 0.2;
+    }
+    else r = 0.8;
 }
 void key(GLFWwindow* window, int key, int scanmode, int state, int mods) {
     if (key == GLFW_KEY_ESCAPE && state == GLFW_PRESS) {
@@ -74,8 +78,8 @@ int main(void)
     int cnt = -1;
     for (int i = 0; i < 360; ++i) {
         double delta = i * PI / 180;
-        positions[++cnt] = cos(delta) * 200;
-        positions[++cnt] = sin(delta) * 200;
+        positions[++cnt] = cos(delta) * 400;
+        positions[++cnt] = sin(delta) * 100;
     }
 
     
@@ -98,9 +102,11 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
         reshape(window);
 
+
+
         glPushMatrix();
         glTranslated(wwindowsize / 2, hwindowsize / 2, 0);
-        glColor3d(0.8f, 0.3f, 0.02f);
+        glColor3d(r, 0.3f, 0.02f);
         glDrawArrays(GL_POLYGON, 0, cnt);
         glPopMatrix();
 
