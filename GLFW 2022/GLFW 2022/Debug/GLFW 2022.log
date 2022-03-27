@@ -1,4 +1,0 @@
-﻿  main.cpp
-C:\Users\Junior\OneDrive\Desktop\GLFW 2022\GLFW 2022\main.cpp(77,39): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Junior\OneDrive\Desktop\GLFW 2022\GLFW 2022\main.cpp(78,39): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  GLFW 2022.vcxproj -> C:\Users\Junior\OneDrive\Desktop\GLFW 2022\Debug\GLFW 2022.exe
