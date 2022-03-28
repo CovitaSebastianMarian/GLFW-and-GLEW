@@ -79,10 +79,14 @@ int main(void)
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     /*
+    * glVertexAttribPointer(index, size, type, normalized, stride, pointer);
     * 
-    * 
-    * 
-    * 
+    * index = id
+    * size = cate valori sa ia de la pointer mergand spre dreapta
+    * type = GL_FLOAT sau GL_INT depinde de ce tipuri de date contine matricea de pozitii
+    * normalized = mai mereu e GL_FALSE
+    * stride = e de unde sa inceapa sa ia valori data viitoare / peste cate valori sa sara
+    * pointer = ne zice de unde incepe la inceput sa ia valori
     * 
     */
 
