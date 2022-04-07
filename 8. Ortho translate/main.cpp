@@ -144,6 +144,9 @@ int main()
     * ###############################################################
     * !!! mai intai GLCall(glUseProgram(shader)); si dupa atribuim valori datelor uniform din shader !!!
     * ################################################################
+    * GL_LINEAR = nu ai pixeli, culorile sunt linii smooth
+    * GL_NEAREST = ai imaginea facuta din pixeli
+    * #################################################################
     */
 
 
