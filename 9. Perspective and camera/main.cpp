@@ -24,7 +24,7 @@ using namespace std;
 double wwindowsize = 1200 , hwindowsize = 700;
 double xmouse, ymouse, xpos, ypos;
 double zoom = 0.0;
-float angle = 0.0;
+float anglex = 0.0, angley = 0.0;
 
 
 
@@ -39,8 +39,10 @@ void reshape(GLFWwindow* window)
 
 void key(GLFWwindow* window, int key, int scanmode, int state, int mods) {
     if (key == GLFW_KEY_ESCAPE && state == GLFW_PRESS) exit(0);
-    else if (key == GLFW_KEY_D && (state == GLFW_REPEAT || state == GLFW_PRESS)) angle++;
-    else if (key == GLFW_KEY_A && (state == GLFW_REPEAT || state == GLFW_PRESS)) angle--;
+    else if (key == GLFW_KEY_D && (state == GLFW_REPEAT || state == GLFW_PRESS)) anglex++;
+    else if (key == GLFW_KEY_A && (state == GLFW_REPEAT || state == GLFW_PRESS)) anglex--;
+    else if (key == GLFW_KEY_W && (state == GLFW_REPEAT || state == GLFW_PRESS)) angley++;
+    else if (key == GLFW_KEY_S && (state == GLFW_REPEAT || state == GLFW_PRESS)) angley--;
 }
 void cursor(GLFWwindow* window, double x, double y) {
     xmouse = x;
@@ -138,6 +140,16 @@ int main()
         -100.0, -100.0, 100.0,     0,1,0,   1.0,0.0,
         -100.0, 100.0, 100.0,      0,0,1,   1.0,1.0,
         -100.0, 100.0, -100.0,     1,1,0,   0.0,1.0,
+
+        -100.0, 100.0, -100.0,     1,0,0,   0.0,0.0,
+        -100.0, 100.0, 100.0,      0,1,0,   1.0,0.0,
+        100.0, 100.0, 100.0,       0,0,1,   1.0,1.0,
+        100.0, 100.0, -100.0,      1,1,0,   0.0,1.0,
+
+        -100.0, -100.0, -100.0,     1,0,0,   0.0,0.0,
+        -100.0, -100.0, 100.0,      0,1,0,   1.0,0.0,
+        100.0, -100.0, 100.0,       0,0,1,   1.0,1.0,
+        100.0, -100.0, -100.0,      1,1,0,   0.0,1.0,
     };
 
     unsigned int VAO, VBO;
@@ -159,7 +171,7 @@ int main()
 
     int width, height, nrChannels;
     //stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load("grass.jpg", &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("brick.jpg", &width, &height, &nrChannels, 0);
 
     GLuint texture;
     glGenTextures(1, &texture);
@@ -167,8 +179,6 @@ int main()
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -179,9 +189,6 @@ int main()
 
 
 
-
-
-
     ShaderProgramSource source = ParseShader("Basic.shader");
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
@@ -189,15 +196,26 @@ int main()
     glm::mat4 Perspective = glm::perspective(glm::radians(25.0f), 1.0f, 0.1f, 100.0f);
 
     glm::mat4 Camera = glm::lookAt(glm::vec3(0, 0, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-    
+    /*
     glm::mat4 transform(1.0);
     transform = glm::ortho(0.0, wwindowsize, hwindowsize, 0.0, 100.0, -100.0);
     transform = glm::translate(transform, glm::vec3(wwindowsize / 2, hwindowsize / 2, 0));
     transform = glm::scale(transform, glm::vec3(1, 1, 1));
     transform = glm::rotate(transform, glm::radians(0.0f), glm::vec3(0, 1, 0));
+    */
+    glm::mat4 ortho(1.0);
+    ortho = glm::ortho(0.0, wwindowsize, hwindowsize, 0.0, 100.0, -100.0);
+    glm::mat4 translate(1.0);
+    translate = glm::translate(translate, glm::vec3(wwindowsize / 2, hwindowsize / 2, 0));
+    glm::mat4 scale(1.0);
+    scale = glm::scale(scale, glm::vec3(1, 1, 1));
+    glm::mat4 rotate(1.0);
+    rotate = glm::rotate(rotate, glm::radians(0.0f), glm::vec3(0, 1, 0));
 
-    glm::mat4 PT = Perspective * Camera * transform;
-    ;
+
+
+    glm::mat4 PT = Perspective * Camera * (ortho * translate * scale * rotate);
+    
     int location = glGetUniformLocation(shader, "Matrix");
 
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(PT));
@@ -212,19 +230,17 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         reshape(window);
 
-        glm::mat4 transform(1.0);
-        transform = glm::ortho(0.0, wwindowsize, hwindowsize, 0.0, 100.0, -100.0);
-        transform = glm::translate(transform, glm::vec3(wwindowsize / 2, hwindowsize / 2, 0));
-        transform = glm::scale(transform, glm::vec3(1, 1, 1));
-        transform = glm::rotate(transform, glm::radians(angle), glm::vec3(0, 1, 0));
-        glm::mat4 PT = Perspective * Camera * transform;
+        glm::mat4 rotate(1.0);
+        rotate = glm::rotate(rotate, glm::radians(angley), glm::vec3(1, 0, 0));
+        rotate = glm::rotate(rotate, glm::radians(anglex), glm::vec3(0, 1, 0));
+        glm::mat4 PT = Perspective * Camera * (ortho * translate * scale * rotate);
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(PT));
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_QUADS, 0, 16);
-        
+        glDrawArrays(GL_QUADS, 0, 24);
         
 
+       
         glfwSwapBuffers(window);
         glfwPollEvents();
         this_thread::sleep_for(chrono::microseconds(1000 / 60));
