@@ -14,6 +14,8 @@
 
 using namespace std;
 
+
+
 class Object {
 private:
 	unsigned int VAO, VBO, texture, shader;
@@ -28,53 +30,53 @@ private:
 public:
 	Object() {}
 	~Object() {
-		glDeleteVertexArrays(1, &VAO);
-		glDeleteBuffers(1, &VBO);
-		glDeleteTextures(1, &texture);
-		glDeleteProgram(shader);
+		GLCall(glDeleteVertexArrays(1, &VAO));
+		GLCall(glDeleteBuffers(1, &VBO));
+		GLCall(glDeleteTextures(1, &texture));
+		GLCall(glDeleteProgram(shader));
 	}
 	void Init(float positions[], const int size) {
-		glDeleteVertexArrays(1, &VAO);
-		glDeleteBuffers(1, &VBO);
+		GLCall(glDeleteVertexArrays(1, &VAO));
+		GLCall(glDeleteBuffers(1, &VBO));
 
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
+		GLCall(glGenVertexArrays(1, &VAO));
+		GLCall(glGenBuffers(1, &VBO));
 
-		glBindVertexArray(VAO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, size, positions, GL_STATIC_DRAW);
+		GLCall(glBindVertexArray(VAO));
+		GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+		GLCall(glBufferData(GL_ARRAY_BUFFER, size, positions, GL_STATIC_DRAW));
 
 	};
 	void VertexAttribpointer(int index, int start, int count, int jump, int type) {
-		glVertexAttribPointer(index, count, type, GL_FALSE, jump * sizeof(float), (void*)(start * sizeof(float)));
-		glEnableVertexAttribArray(index);
+		GLCall(glVertexAttribPointer(index, count, type, GL_FALSE, jump * sizeof(float), (void*)(start * sizeof(float))));
+		GLCall(glEnableVertexAttribArray(index));
 	}
 	void Shader(const char * filename) {
 		ShaderProgramSource source = ParseShader(filename);
 		shader = CreateShader(source.VertexSource, source.FragmentSource);
-		glUseProgram(shader);
+		GLCall(glUseProgram(shader));
 
 		location = glGetUniformLocation(shader, "Matrix");
 
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
 	void Texture(const char * filename, bool flip) {
-		glDeleteTextures(1, &texture);
+		GLCall(glDeleteTextures(1, &texture));
 
 		int width, height, nrChannels;
 		stbi_set_flip_vertically_on_load(flip);
 		unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
 
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		GLCall(glGenTextures(1, &texture));
+		GLCall(glBindTexture(GL_TEXTURE_2D, texture));
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+		GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data));
+		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 
 		stbi_image_free(data);
 	}
@@ -110,10 +112,10 @@ public:
 	}
 
 	void Bind(int type, int start, int count) {
-		glUseProgram(shader);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(PT));
-		glBindVertexArray(VAO);
-		glDrawArrays(type, start, count);
+		GLCall(glUseProgram(shader));
+		GLCall(glBindTexture(GL_TEXTURE_2D, texture));
+		GLCall(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(PT)));
+		GLCall(glBindVertexArray(VAO));
+		GLCall(glDrawArrays(type, start, count));
 	}
 };
