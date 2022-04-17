@@ -81,45 +81,39 @@ public:
 	void Perspective(double fovy, double aspect, double zNear, double zFar) {
 		perspective = glm::mat4(1.0);
 		perspective = glm::perspective(fovy, aspect, zNear, zFar);
-		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
 	void Camera(glm::vec3 eye, glm::vec3 center, glm::vec3 up) {
 		camera = glm::mat4(1.0);
 		camera = glm::lookAt(eye, center, up);
-		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
 	void Ortho(double left, double right, double bottmom, double top, double zNear, double zFar) {
 		ortho = glm::mat4(1.0);
 		ortho = glm::ortho(left, right, bottmom, top, zNear, zFar);
-		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
 	void Translate(glm::vec3 pos, bool repeat) {
 		if(!repeat) translate = glm::mat4(1.0);
 		translate = glm::translate(translate, pos);
-		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
 	void Scale(glm::vec3 dim, bool repeat) {
 		if (!repeat) scale = glm::mat4(1.0);
 		scale = glm::scale(scale, dim);
-		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
 	void Rotate(float angle, glm::vec3 dir, bool repeat) {
 		if(!repeat)rotate = glm::mat4(1.0);
 		rotate = glm::rotate(rotate, angle, dir);
-		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
 
-	void Bind() {
+	void Bind(int type, int start, int count) {
 		glUseProgram(shader);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(PT));
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_QUADS, 0, 4);
+		glDrawArrays(type, start, count);
 	}
 };
