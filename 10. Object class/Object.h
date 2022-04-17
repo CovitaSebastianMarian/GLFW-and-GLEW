@@ -25,11 +25,14 @@ private:
 	glm::mat4 translate = glm::mat4(1.0);
 	glm::mat4 rotate = glm::mat4(1.0);
 	glm::mat4 scale = glm::mat4(1.0);
-	
-
 public:
-
 	Object() {}
+	~Object() {
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &VBO);
+		glDeleteTextures(1, &texture);
+		glDeleteProgram(shader);
+	}
 	void Init(float positions[], const int size) {
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(1, &VBO);
@@ -75,7 +78,7 @@ public:
 
 		stbi_image_free(data);
 	}
-	template<class T> void Perspective(T fovy, T aspect, T zNear, T zFar) {
+	void Perspective(double fovy, double aspect, double zNear, double zFar) {
 		perspective = glm::mat4(1.0);
 		perspective = glm::perspective(fovy, aspect, zNear, zFar);
 		//glm::mat4 PT = glm::mat4(1.0);
@@ -87,7 +90,7 @@ public:
 		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
-	template <class T> void Ortho(T left, T right, T bottmom, T top, T zNear, T zFar) {
+	void Ortho(double left, double right, double bottmom, double top, double zNear, double zFar) {
 		ortho = glm::mat4(1.0);
 		ortho = glm::ortho(left, right, bottmom, top, zNear, zFar);
 		//glm::mat4 PT = glm::mat4(1.0);
@@ -107,7 +110,7 @@ public:
 	}
 	void Rotate(float angle, glm::vec3 dir, bool repeat) {
 		if(!repeat)rotate = glm::mat4(1.0);
-		rotate = glm::rotate(rotate, (float)glm::radians(angle), dir);
+		rotate = glm::rotate(rotate, angle, dir);
 		//glm::mat4 PT = glm::mat4(1.0);
 		PT = perspective * camera * (ortho * translate * rotate * scale);
 	}
