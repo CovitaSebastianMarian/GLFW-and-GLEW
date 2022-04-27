@@ -208,7 +208,7 @@ double Rest(int a, int b) {
 bool Colision(unsigned int id, int& obs) {
     for (int i = 0; i < ID.size(); ++i) {
         if (id != ID[i]) {
-            if (sqrt(pow(Data[id].xpos - Data[ID[i]].xpos, 2) + pow(Data[id].ypos - Data[ID[i]].ypos, 2)) <= (Data[id].sze / 2 + Data[ID[i]].sze / 2) && Data[id].direction != Data[ID[i]].direction) {
+            if (sqrt(pow(Data[id].xpos - Data[ID[i]].xpos, 2) + pow(Data[id].ypos - Data[ID[i]].ypos, 2)) <= (Data[id].sze / 2 + Data[ID[i]].sze / 2)) {
                 
                 obs = i;
                 return true;
