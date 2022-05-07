@@ -120,7 +120,7 @@ int main()
     obj.VertexAttribpointer(1, 3, 2, 5, GL_FLOAT);
     obj.Shader("Shaders/Basic.shader");
     obj.Texture("Textures/cube.jpg", GL_RGB, true);
-    obj.Ortho(0, wwindowsize, hwindowsize, 0, -100, 100);
+    obj.Ortho(0, wwindowsize, hwindowsize, 0, 100, -100);
     obj.Translate(glm::vec3(wwindowsize / 2, hwindowsize / 2, 0), false);
     obj.Perspective(glm::radians(45.0), 1, 0.1, 100);
     obj.LookAt(glm::vec3(0, 0, 5), glm::vec3(0, 0, -0.1), glm::vec3(0, 1, 0));
