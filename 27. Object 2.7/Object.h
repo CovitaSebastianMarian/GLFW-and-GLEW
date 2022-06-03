@@ -30,27 +30,29 @@
 #############################################################*/
 
 
-/*##############################################################################
-# CONTENT:
-#	-> Object();
-#	-> Destruct();
-#	-> Init();
-#	-> Reload();
-#	-> LoadMatrix();
-#	-> VertexAttribPointer();
-#	-> Shader();
-#	-> Texture();
-#	-> Perspective();
-#	-> LookAt();
-#	-> Ortho();
-#	-> Translate();
-#	-> Scale();
-#	-> Rotate();
-#	-> Bind();
-#	-> UnBind();
-#
-#
-###############################################################################*/
+//*#############################################################################
+# CONTENT:                                                                     #
+#	-> Object();                                                           #
+#	-> Destruct();                                                         #
+#	-> Init();                                                             #
+#   	-> DynamicInit();                                                      #
+#   	-> DynamicInitInd();                                                   #
+#	-> Reload();                                                           #
+#	-> LoadMatrix();                                                       #
+#	-> VertexAttribPointer();                                              #
+#	-> Shader();                                                           #
+#	-> Texture();                                                          #
+#	-> Perspective();                                                      #
+#	-> LookAt();                                                           #
+#	-> Ortho();                                                            #
+#	-> Translate();                                                        #
+#	-> Scale();                                                            #
+#	-> Rotate();                                                           #
+#	-> Bind();                                                             #
+#	-> UnBind();                                                           #
+#                                                                              #
+#                                                                              #
+##############################################################################*/
 
 class Object {
 protected:
