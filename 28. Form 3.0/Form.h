@@ -125,7 +125,7 @@ public:
 			FD.positions.push_back(1);
 
 			FD.positions.push_back(cos(delta) * FD.xsize2 / 2);
-			FD.positions.push_back(sin(delta) * FD.xsize2 / 2);
+			FD.positions.push_back(sin(delta) * FD.ysize2 / 2);
 			FD.positions.push_back(-FD.height / 2);
 
 			FD.positions.push_back((float)((float)(i) / ((float)jump) * (1 / (float)(edges))));
