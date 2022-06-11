@@ -23,103 +23,138 @@ using namespace std;
 
 
 double wwindowsize = 1200 , hwindowsize = 700;
+double xmouse, ymouse;
 double angle = 0;
 double gunxpos = wwindowsize / 2, gunypos = hwindowsize / 2;
-double xmouse = 0, ymouse = 0;
-bool play = false;
-double gunxsize = 100, gunysize = 20;
+double gunxsize = 200, gunysize = 40;
+int pointtobuildgun = 3;
+double xdif, ydif;
+bool texturechange = false;
+double normalangle = angle * 180 / PI;
+
+//key
+bool W_KEY = false, S_KEY = false, A_KEY = false, D_KEY = false;
+double gunmovespeed = 10;
+Object* gun;
+
+
 
 class Bullet {
 private:
-    double xsize = 10;
-    double ysize = 5;
-    double xmove = 10, ymove = 10;
-
-    double xlat, ylat;
-    double xdif, ydif;
-
     Object* glont;
 public:
     double xpos, ypos;
+    double speed = 100;
+    double glontxsize = 20, glontysize = 10;
+    double xlat, ylat;
+
     void Create() {
-        glont = new Object;
-        xdif = xmouse - gunxpos;
-        ydif = ymouse - gunypos;
+
         xlat = xdif / sqrt(pow(xdif, 2) + pow(ydif, 2));
         ylat = ydif / sqrt(pow(ydif, 2) + pow(xdif, 2));
-        xpos = gunxpos;
-        ypos = gunypos;
+        xpos = gunxpos + xlat * (gunxsize - glontxsize);
+        ypos = gunypos + ylat * (gunxsize - glontysize);
 
+        glont = new Object;
 
-        glont->VectorPositions.push_back(-xsize / 2);
-        glont->VectorPositions.push_back(-ysize / 2);
+        glont->VectorPositions.push_back(-glontxsize / 2);
+        glont->VectorPositions.push_back(-glontysize / 2);
+
+        glont->VectorPositions.push_back(0);
         glont->VectorPositions.push_back(0);
 
-        glont->VectorPositions.push_back(0);
-        glont->VectorPositions.push_back(0);
-
-        glont->VectorPositions.push_back(xsize / 2);
-        glont->VectorPositions.push_back(-ysize / 2);
-        glont->VectorPositions.push_back(0);
+        glont->VectorPositions.push_back(glontxsize / 2);
+        glont->VectorPositions.push_back(-glontysize / 2);
 
         glont->VectorPositions.push_back(1);
         glont->VectorPositions.push_back(0);
 
-        glont->VectorPositions.push_back(xsize / 2);
-        glont->VectorPositions.push_back(ysize / 2);
-        glont->VectorPositions.push_back(0);
+        glont->VectorPositions.push_back(glontxsize / 2);
+        glont->VectorPositions.push_back(glontysize / 2);
 
         glont->VectorPositions.push_back(1);
         glont->VectorPositions.push_back(1);
 
-        glont->VectorPositions.push_back(-xsize / 2);
-        glont->VectorPositions.push_back(ysize / 2);
-        glont->VectorPositions.push_back(0);
+        glont->VectorPositions.push_back(-glontxsize / 2);
+        glont->VectorPositions.push_back(glontysize / 2);
 
         glont->VectorPositions.push_back(0);
         glont->VectorPositions.push_back(1);
 
         glont->DynamicInit(GL_DYNAMIC_DRAW);
-        glont->VertexAttribpointer(0, 0, 3, 5, GL_FLOAT);
-        glont->VertexAttribpointer(1, 3, 2, 5, GL_FLOAT);
+        glont->VertexAttribpointer(0, 0, 2, 4, GL_FLOAT);
+        glont->VertexAttribpointer(1, 2, 2, 4, GL_FLOAT);
         glont->Shader("Shaders/Basic.shader");
-        glont->Texture("Textures/image.jpg", GL_RGB, false);
+        glont->Texture("Textures/bullet.png", GL_RGBA, texturechange);
         glont->Ortho(0, wwindowsize, hwindowsize, 0, 1, -1);
+        glont->Translate(glm::vec3(xpos, ypos - 8, 0), false);
         glont->Rotate(angle, glm::vec3(0, 0, 1), false);
-        glont->Translate(glm::vec3(xpos + xlat * (gunxsize - xsize * 2), ypos + ylat * (gunxsize - xsize * 2), 0), false);
     }
 
+
     void Draw() {
-        if (play) {
-            glont->Translate(glm::vec3(xmove * xlat, ymove * ylat, 0), true);
-            xpos += xmove * xlat;
-            ypos += ymove * ylat;
-        }
+        glont->Translate(glm::vec3(speed * xlat, speed * ylat, 0), true);
+        xpos += speed * xlat;
+        ypos += speed * ylat;
         glont->Bind(GL_QUADS, 0, 4);
     }
+
 
 } bl;
 vector<Bullet> bullet;
 
 
+void Config() {
+    if (W_KEY) {
+        gunypos -= gunmovespeed;
+    }
+    if (S_KEY) {
+        gunypos += gunmovespeed;
+    }
+    if (A_KEY) {
+        gunxpos -= gunmovespeed;
+    }
+    if (D_KEY) {
+        gunxpos += gunmovespeed;
+    }
+    angle = atan2(ymouse - gunypos, xmouse - gunxpos);
+    xdif = xmouse - gunxpos;
+    ydif = ymouse - gunypos;
+}
 
-void reshape(GLFWwindow* window)
-{
+
+
+
+void reshape(GLFWwindow* window) {
     int w, h;
     glfwGetWindowSize(window, &w, &h);
     if (w != wwindowsize || h != hwindowsize) {
         wwindowsize = w;
         hwindowsize = h;
         glViewport(0, 0, wwindowsize, hwindowsize);
+        gun->Ortho(0, wwindowsize, hwindowsize, 0, 1, -1);
     }
 }
 
 void key(GLFWwindow* window, int key, int scanmode, int state, int mods) {
     if (key == GLFW_KEY_ESCAPE && state == GLFW_PRESS) exit(0);
-    if (key == GLFW_KEY_SPACE && state == GLFW_PRESS) {
-        if (play) play = false;
-        else play = true;
-    }
+    
+    if (key == GLFW_KEY_W)
+        if (state == GLFW_PRESS) W_KEY = true;
+        else if (state == GLFW_RELEASE) W_KEY = false;
+
+    if (key == GLFW_KEY_S)
+        if (state == GLFW_PRESS) S_KEY = true;
+        else if (state == GLFW_RELEASE) S_KEY = false;
+
+    if (key == GLFW_KEY_A)
+        if (state == GLFW_PRESS) A_KEY = true;
+        else if (state == GLFW_RELEASE) A_KEY = false;
+
+    if (key == GLFW_KEY_D)
+        if (state == GLFW_PRESS) D_KEY = true;
+        else if (state == GLFW_RELEASE) D_KEY = false;
+
 }
 
 void mouse(GLFWwindow* window, int button, int action, int mods) {
@@ -131,10 +166,10 @@ void mouse(GLFWwindow* window, int button, int action, int mods) {
 void cursor(GLFWwindow* window, double x, double y) {
     xmouse = x;
     ymouse = y;
-    angle = atan2(ymouse - gunypos, xmouse - gunxpos);
+    angle = atan2(y - gunypos, x - gunxpos);
+    xdif = x - gunxpos;
+    ydif = y - gunypos;
 }
-
-
 
 
 
@@ -180,45 +215,38 @@ int main()
 
     
 
-    
-    Object* gun = new Object;
-    gun->VectorPositions.push_back(-gunxsize / 5);
+
+    gun = new Object;
+    gun->VectorPositions.push_back(-gunxsize / pointtobuildgun);
     gun->VectorPositions.push_back(-gunysize / 2);
-    gun->VectorPositions.push_back(0);
 
     gun->VectorPositions.push_back(0);
     gun->VectorPositions.push_back(0);
 
-    gun->VectorPositions.push_back(4 * gunxsize / 5);
+    gun->VectorPositions.push_back((pointtobuildgun - 1) * gunxsize / pointtobuildgun);
     gun->VectorPositions.push_back(-gunysize / 2);
-    gun->VectorPositions.push_back(0);
 
     gun->VectorPositions.push_back(1);
     gun->VectorPositions.push_back(0);
 
-    gun->VectorPositions.push_back(4 * gunxsize / 5);
+    gun->VectorPositions.push_back((pointtobuildgun - 1) * gunxsize / pointtobuildgun);
     gun->VectorPositions.push_back(gunysize / 2);
-    gun->VectorPositions.push_back(0);
 
     gun->VectorPositions.push_back(1);
     gun->VectorPositions.push_back(1);
 
-    gun->VectorPositions.push_back(-gunxsize / 5);
+    gun->VectorPositions.push_back(-gunxsize / pointtobuildgun);
     gun->VectorPositions.push_back(gunysize / 2);
-    gun->VectorPositions.push_back(0);
 
     gun->VectorPositions.push_back(0);
     gun->VectorPositions.push_back(1);
-    
     gun->DynamicInit(GL_DYNAMIC_DRAW);
-    gun->VertexAttribpointer(0, 0, 3, 5, GL_FLOAT);
-    gun->VertexAttribpointer(1, 3, 2, 5, GL_FLOAT);
+    gun->VertexAttribpointer(0, 0, 2, 4, GL_FLOAT);
+    gun->VertexAttribpointer(1, 2, 2, 4, GL_FLOAT);
     gun->Shader("Shaders/Basic.shader");
-    gun->Texture("Textures/grass.jpg", GL_RGB, false);
+    gun->Texture("Textures/gun.png", GL_RGBA, false);
     gun->Ortho(0, wwindowsize, hwindowsize, 0, 1, -1);
     gun->Translate(glm::vec3(gunxpos, gunypos, 0), false);
-
-
 
 
 
@@ -228,18 +256,30 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+        Config();
+
+
+        normalangle = angle * 180 / PI;
+        if (normalangle  > -90 && normalangle < 90 && texturechange) {
+            gun->Texture("Textures/gun.png", GL_RGBA, false);
+            texturechange = false;
+        }
+        else if((normalangle < -90 || normalangle > 90) && !texturechange) {
+            gun->Texture("Textures/gun.png", GL_RGBA, true);
+            texturechange = true;
+        }
+
+
         gun->Translate(glm::vec3(gunxpos, gunypos, 0), false);
         gun->Rotate(angle, glm::vec3(0, 0, 1), false);
         gun->Bind(GL_QUADS, 0, 4);
 
-        for (int i = 0; i < bullet.size(); ++i) {
-            bullet[i].Draw();
+        for (size_t i = 0; i < bullet.size(); ++i) {
             if (bullet[i].xpos < 0 || bullet[i].xpos > wwindowsize || bullet[i].ypos < 0 || bullet[i].ypos > hwindowsize) {
                 bullet.erase(bullet.begin() + i);
             }
+            else bullet[i].Draw();
         }
-        cout << bullet.size() << "\n";
-
 
         glfwSwapBuffers(window);
         glfwPollEvents();
