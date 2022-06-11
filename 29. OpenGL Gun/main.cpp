@@ -26,7 +26,7 @@ double wwindowsize = 1200 , hwindowsize = 700;
 double xmouse, ymouse;
 double angle = 0;
 double gunxpos = wwindowsize / 2, gunypos = hwindowsize / 2;
-double gunxsize = 200, gunysize = 40;
+double gunxsize = 100, gunysize = 30;
 int pointtobuildgun = 3;
 double xdif, ydif;
 bool texturechange = false;
@@ -44,16 +44,20 @@ private:
     Object* glont;
 public:
     double xpos, ypos;
-    double speed = 100;
-    double glontxsize = 20, glontysize = 10;
+    double speed = 1;
+    double glontxsize = 60, glontysize = 10;
     double xlat, ylat;
+
+    void Delete() {
+        delete glont;
+    }
 
     void Create() {
 
         xlat = xdif / sqrt(pow(xdif, 2) + pow(ydif, 2));
         ylat = ydif / sqrt(pow(ydif, 2) + pow(xdif, 2));
-        xpos = gunxpos + xlat * (gunxsize - glontxsize);
-        ypos = gunypos + ylat * (gunxsize - glontysize);
+        xpos = gunxpos + xlat * gunxsize;
+        ypos = gunypos + ylat * gunxsize;
 
         glont = new Object;
 
@@ -87,7 +91,7 @@ public:
         glont->Shader("Shaders/Basic.shader");
         glont->Texture("Textures/bullet.png", GL_RGBA, texturechange);
         glont->Ortho(0, wwindowsize, hwindowsize, 0, 1, -1);
-        glont->Translate(glm::vec3(xpos, ypos - 8, 0), false);
+        glont->Translate(glm::vec3(xpos, ypos, 0), false);
         glont->Rotate(angle, glm::vec3(0, 0, 1), false);
     }
 
@@ -262,6 +266,7 @@ int main()
         normalangle = angle * 180 / PI;
         if (normalangle  > -90 && normalangle < 90 && texturechange) {
             gun->Texture("Textures/gun.png", GL_RGBA, false);
+            //gun->Texture("Textures/grass.jpg", GL_RGB, false);
             texturechange = false;
         }
         else if((normalangle < -90 || normalangle > 90) && !texturechange) {
@@ -276,6 +281,7 @@ int main()
 
         for (size_t i = 0; i < bullet.size(); ++i) {
             if (bullet[i].xpos < 0 || bullet[i].xpos > wwindowsize || bullet[i].ypos < 0 || bullet[i].ypos > hwindowsize) {
+                bullet[i].Delete();
                 bullet.erase(bullet.begin() + i);
             }
             else bullet[i].Draw();
