@@ -22,21 +22,22 @@
 using namespace std;
 
 
-double wwindowsize = 1200 , hwindowsize = 700;
+double wwindowsize = 1200, hwindowsize = 700;
 double xmouse, ymouse;
 double angle = 0;
 double gunxpos = wwindowsize / 2, gunypos = hwindowsize / 2;
-double gunxsize = 100, gunysize = 30;
+double gunxsize = 200, gunysize = 60;
 int pointtobuildgun = 3;
 double xdif, ydif;
 bool texturechange = false;
 double normalangle = angle * 180 / PI;
+bool ismousebuttonpressed = false;
 
 //key
 bool W_KEY = false, S_KEY = false, A_KEY = false, D_KEY = false;
 double gunmovespeed = 10;
 Object* gun;
-
+int delay = 0;
 
 
 class Bullet {
@@ -44,8 +45,8 @@ private:
     Object* glont;
 public:
     double xpos, ypos;
-    double speed = 1;
-    double glontxsize = 60, glontysize = 10;
+    double speed = 10;
+    double glontxsize = 20, glontysize = 5;
     double xlat, ylat;
 
     void Delete() {
@@ -97,10 +98,10 @@ public:
 
 
     void Draw() {
+        glont->Bind(GL_QUADS, 0, 4);
         glont->Translate(glm::vec3(speed * xlat, speed * ylat, 0), true);
         xpos += speed * xlat;
         ypos += speed * ylat;
-        glont->Bind(GL_QUADS, 0, 4);
     }
 
 
@@ -109,6 +110,16 @@ vector<Bullet> bullet;
 
 
 void Config() {
+
+    if (ismousebuttonpressed && delay == 0) {
+        bl.Create();
+        bullet.push_back(bl);
+    }
+    if (delay == 10) delay = 0;
+    else delay++;
+        
+
+
     if (W_KEY) {
         gunypos -= gunmovespeed;
     }
@@ -142,7 +153,7 @@ void reshape(GLFWwindow* window) {
 
 void key(GLFWwindow* window, int key, int scanmode, int state, int mods) {
     if (key == GLFW_KEY_ESCAPE && state == GLFW_PRESS) exit(0);
-    
+
     if (key == GLFW_KEY_W)
         if (state == GLFW_PRESS) W_KEY = true;
         else if (state == GLFW_RELEASE) W_KEY = false;
@@ -158,13 +169,18 @@ void key(GLFWwindow* window, int key, int scanmode, int state, int mods) {
     if (key == GLFW_KEY_D)
         if (state == GLFW_PRESS) D_KEY = true;
         else if (state == GLFW_RELEASE) D_KEY = false;
-
 }
 
 void mouse(GLFWwindow* window, int button, int action, int mods) {
+    /*
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         bl.Create();
         bullet.push_back(bl);
+    }
+    */
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) ismousebuttonpressed = true, delay = 0;
+        else if (action == GLFW_RELEASE) ismousebuttonpressed = false;
     }
 }
 void cursor(GLFWwindow* window, double x, double y) {
@@ -214,10 +230,10 @@ int main()
     GLCall(glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST));
     GLCall(glEnable(GL_BLEND));
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    GLCall(glEnable(GL_DEPTH_TEST));
+    //GLCall(glEnable(GL_DEPTH_TEST));
 
 
-    
+
 
 
     gun = new Object;
@@ -253,31 +269,24 @@ int main()
     gun->Translate(glm::vec3(gunxpos, gunypos, 0), false);
 
 
-
     while (!glfwWindowShouldClose(window))
     {
         glClearColor(0.07f, 0.13f, 0.17f, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
         Config();
 
 
         normalangle = angle * 180 / PI;
-        if (normalangle  > -90 && normalangle < 90 && texturechange) {
+        if (normalangle > -90 && normalangle < 90 && texturechange) {
             gun->Texture("Textures/gun.png", GL_RGBA, false);
             //gun->Texture("Textures/grass.jpg", GL_RGB, false);
             texturechange = false;
         }
-        else if((normalangle < -90 || normalangle > 90) && !texturechange) {
+        else if ((normalangle < -90 || normalangle > 90) && !texturechange) {
             gun->Texture("Textures/gun.png", GL_RGBA, true);
             texturechange = true;
         }
-
-
-        gun->Translate(glm::vec3(gunxpos, gunypos, 0), false);
-        gun->Rotate(angle, glm::vec3(0, 0, 1), false);
-        gun->Bind(GL_QUADS, 0, 4);
 
         for (size_t i = 0; i < bullet.size(); ++i) {
             if (bullet[i].xpos < 0 || bullet[i].xpos > wwindowsize || bullet[i].ypos < 0 || bullet[i].ypos > hwindowsize) {
@@ -286,6 +295,11 @@ int main()
             }
             else bullet[i].Draw();
         }
+
+        gun->Translate(glm::vec3(gunxpos, gunypos, 0), false);
+        gun->Rotate(angle, glm::vec3(0, 0, 1), false);
+        gun->Bind(GL_QUADS, 0, 4);
+
 
         glfwSwapBuffers(window);
         glfwPollEvents();
