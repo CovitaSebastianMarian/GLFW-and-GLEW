@@ -30,8 +30,8 @@ int cnt = 90;
 double xpos = 0, zpos = 0;
 double angle = cnt * PI / 180;
 double xlat, ylat;
-double height = 10;
-double yaxes = height - 1;
+double height = 1;
+double yaxes = height;
 
 void reshape(GLFWwindow* window) {
     int w, h;
@@ -44,19 +44,19 @@ void cursor(GLFWwindow* window, double x, double y) {
     double xval = x - (wwindowsize / 2);
     double yval = y - (hwindowsize / 2);
     if (xval > 0) {
-        cnt += 2;
+        cnt += 1.5;
         angle = cnt * PI / 180;
     }
     else if (xval < 0) {
-        cnt -= 2;
+        cnt -= 1.5;
         angle = cnt * PI / 180;
     }
 
     if (yval > 0) {
-        //yaxes -= 0.1;
+        yaxes -= 0.01;
     }
     else if (yval < 0) {
-        //yaxes += 0.1;
+        yaxes += 0.01;
     }
 
     glfwSetCursorPos(window, wwindowsize / 2, hwindowsize / 2);
@@ -173,7 +173,7 @@ int main() {
     plan->VertexAttribpointer(0, 0, 3, 5, GL_FLOAT);
     plan->VertexAttribpointer(1, 3, 2, 5, GL_FLOAT);
     plan->Shader("Shaders/Basic.shader");
-    plan->Texture("Textures/lateralgrass.jpg", GL_RGB, false);
+    plan->Texture("Textures/image.jpg", GL_RGB, false);
     plan->Ortho(0, wwindowsize, 0, hwindowsize, 100, -100);
     plan->Translate(glm::vec3(wwindowsize / 2, hwindowsize / 2, 0), false);
     plan->Perspective(glm::radians(45.0), 1 , 0.1, 100);
