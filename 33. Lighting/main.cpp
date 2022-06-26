@@ -102,7 +102,7 @@ int main() {
         obj[i].VertexAttribpointer(1, 3, 2, 8, GL_FLOAT);
         obj[i].VertexAttribpointer(2, 5, 3, 8, GL_FLOAT);
         obj[i].Shader("Shaders/Light.shader");
-        obj[i].Texture(model.KitVector[i].texture.c_str(), GL_RGB, false);
+        obj[i].Texture(model.KitVector[i].texture.c_str(), GL_RGB, true);
         obj[i].Ortho(0, wwindowsize, 0, hwindowsize, 100, -100);
         obj[i].Translate(glm::vec3(wwindowsize / 2, hwindowsize / 2, 0), false);
         obj[i].Perspective(glm::radians(45.0), 1, 0.1, 100);
@@ -140,8 +140,10 @@ int main() {
         for (int i = 0; i < model.KitVector.size(); ++i) {
             int lp = glGetUniformLocation(obj[i].shader, "lightPos");
             int lc = glGetUniformLocation(obj[i].shader, "lightColor");
-            glUniform3f(lp, xlight, ylight , zlight);
+            int vp = glGetUniformLocation(obj[i].shader, "viewPos");
+            glUniform3f(lp, xlight, ylight ,zlight);
             glUniform3f(lc, 1, 1, 1);
+            glUniform3f(vp, 0, 0, 3);
             //obj[i].Rotate(glm::radians(-1.0), glm::vec3(0, 1, 0), true);
             obj[i].Bind(GL_TRIANGLES);
 
