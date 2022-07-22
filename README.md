@@ -1,6 +1,6 @@
-*** # GLFW-and-GLEW
+***
+# GLFW-and-GLEW
 _______________
 # Aici este toata evolutia mea in glfw si glew
-
 
 ***
