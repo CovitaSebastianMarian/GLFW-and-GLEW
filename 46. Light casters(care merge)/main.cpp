@@ -7,24 +7,93 @@
 #define uint unsigned int
 using namespace std;
 
-void key(GLFWwindow* window, int key, int scanmode, int state, int mods);
-
-
-
 float cnt = 90;
 float xcenter = cos(cnt * PI / 180);
 float zcenter = sin(cnt * PI / 180);
 float ycenter = 5;
 float xeye = 0, yeye = 5, zeye = 0;
-float speed = 0.5;
+float speed = 1, senzitivity = 3.5;
+Window window;
+float width, height;
+bool gamerunning = true;
+float spacepresscnt = 0;
+void key(GLFWwindow* window, int key, int scanmode, int state, int mods) {
+    if (key == GLFW_KEY_ESCAPE && state == GLFW_PRESS) {
+        if (!gamerunning) exit(0);
+        else gamerunning = false;
+    }
+}
+void Init() {
+    width = window.width;
+    height = window.height;
+
+    if (gamerunning) {
+        if (window.getKey(GLFW_KEY_A)) {
+            float xcenter2 = cos((cnt - 90) * PI / 180);
+            float zcenter2 = sin((cnt - 90) * PI / 180);
+            xeye += xcenter2 * speed;
+            zeye += zcenter2 * speed;
+        }
+        if (window.getKey(GLFW_KEY_D)) {
+            float xcenter2 = cos((cnt + 90) * PI / 180);
+            float zcenter2 = sin((cnt + 90) * PI / 180);
+            xeye += xcenter2 * speed;
+            zeye += zcenter2 * speed;
+        }
+        if (window.getKey(GLFW_KEY_W)) {
+            xeye += xcenter * speed;
+            zeye += zcenter * speed;
+        }
+        if (window.getKey(GLFW_KEY_S)) {
+            xeye -= xcenter * speed;
+            zeye -= zcenter * speed;
+        }
+        if (window.getKey(GLFW_KEY_SPACE)) {
+            yeye += speed;
+            ycenter += speed;
+            spacepresscnt++;
+        }
+        else if (spacepresscnt > 0) {
+            spacepresscnt--;
+            yeye -= speed;
+            ycenter -= speed;
+        }
+        
+
+
+        if (cnt >= 360) cnt -= 360;
+        double x, y;
+        glfwGetCursorPos(window.window, &x, &y);
+        glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        glfwSetCursorPos(window.window, width / 2, height / 2);
+
+        if (x - width / 2 > 1) {
+            cnt += senzitivity;
+            xcenter = cos(cnt * PI / 180);
+            zcenter = sin(cnt * PI / 180);
+        }
+        if (x - width / 2 < -1) {
+            cnt -= senzitivity;
+            xcenter = cos(cnt * PI / 180);
+            zcenter = sin(cnt * PI / 180);
+        }
+        if (y - height / 2 > 1) {
+            ycenter -= 0.1;
+        }
+        if (y - height / 2 < -1) {
+            ycenter += 0.1;
+        }
+    }
+}
+
+
+
 
 int main() {
-    Window window;
     window.Create(1200, 700, "Engine", nullptr, nullptr);
     window.setIcon("Textures/image.jpg");
     window.ConfigImGui();
     glfwSetKeyCallback(window.window, key);
-    float width, height;
     width = window.width;
     height = window.height;
     
@@ -38,37 +107,17 @@ int main() {
 
     float xlightpos = 0, ylightpos = 0, zlightpos = 0;
     float xdir = 0, ydir = 0, zdir = -1;
-    float cutOff = 12, outerCutOff = 17;
-    float xamb = 0.1, yamb = 0.1, zamb = 0.1;
+    float cutOff = 12, outerCutOff = 35;
+    float xamb = 0.02, yamb = 0.02, zamb = 0.02;
     float xdiff = 0.8, ydiff = 0.8, zdiff = 0.8;
     float xspec = 1.0, yspec = 1.0, zspec = 1.0;
     float constant = 1.0, linearr = 0, quadratic = 0;
 
     while (window.Open()) {
         window.Begin();
-        width = window.width;
-        height = window.height;
+        
 
-        if (window.getKey(GLFW_KEY_A)) {
-            cnt-=1.5;
-            xcenter = cos(cnt * PI / 180);
-            zcenter = sin(cnt * PI / 180);
-        }
-        if (window.getKey(GLFW_KEY_D)) {
-            cnt+=1.5;
-            xcenter = cos(cnt * PI / 180);
-            zcenter = sin(cnt * PI / 180);
-        }
-        if (window.getKey(GLFW_KEY_W)) {
-            xeye += xcenter * speed;
-            zeye += zcenter * speed;
-        }
-        if (window.getKey(GLFW_KEY_S)) {
-            xeye -= xcenter * speed;
-            zeye -= zcenter * speed;
-        }
-
-
+        Init();
 
 
 
@@ -188,11 +237,4 @@ int main() {
     }
     window.ShutDown();
     return 0;
-}
-
-
-void key(GLFWwindow* window, int key, int scanmode, int state, int mods) {
-    if (key == GLFW_KEY_ESCAPE && state == GLFW_PRESS) {
-        exit(0);
-    }
 }
