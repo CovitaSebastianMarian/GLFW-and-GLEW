@@ -97,7 +97,7 @@ int main() {
             shader.setFloat("material.shininess", 32);
 
             shader.setVec3("light.position", xeye, yeye, zeye);
-            shader.setVec3("light.direction", xcenter, yeye - ycenter - 0.1, zcenter);
+            shader.setVec3("light.direction", xcenter, ycenter - yeye - 0.1, zcenter);
             shader.setFloat("light.cutOff", glm::cos(glm::radians(cutOff)));
             shader.setFloat("light.outerCutOff", glm::cos(glm::radians(outerCutOff)));
 
