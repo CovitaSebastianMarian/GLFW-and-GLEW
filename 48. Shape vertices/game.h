@@ -76,13 +76,13 @@ private:
 public:
 	Shape() {}
 	
-	inline void Init(double center_point_x_pos, double ceter_point_y_pos, vector<pair<float, float>> pos) {
+	inline void Init(double center_point_x_pos, double center_point_y_pos, vector<pair<float, float>> pos) {
 		this->size = pos.size();
 		vector_points = new vec[size];
 
 		center_point->scale = 10;
 		center_point->color = glm::vec3(1, 0, 0);
-		center_point->position = glm::vec2(center_point_x_pos, ceter_point_y_pos);
+		center_point->position = glm::vec2(center_point_x_pos, center_point_y_pos);
 
 		for (uint64_t i = 0; i < size; ++i) {
 
