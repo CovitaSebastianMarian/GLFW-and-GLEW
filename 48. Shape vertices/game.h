@@ -1,6 +1,6 @@
 #pragma once
 //include the class after include glew, glfw, glm, vector and using namespace std
-
+//use Shader class
 Shader* shader = nullptr;
 
 class Point {
