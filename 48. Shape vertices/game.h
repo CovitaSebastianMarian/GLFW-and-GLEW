@@ -76,13 +76,13 @@ private:
 public:
 	Shape() {}
 	
-	//After setting possition
-	inline void Init(vector<pair<float, float>> pos) {
+	inline void Init(double center_point_x_pos, double ceter_point_y_pos, vector<pair<float, float>> pos) {
 		this->size = pos.size();
 		vector_points = new vec[size];
 
 		center_point->scale = 10;
 		center_point->color = glm::vec3(1, 0, 0);
+		center_point->position = glm::vec2(center_point_x_pos, ceter_point_y_pos);
 
 		for (uint64_t i = 0; i < size; ++i) {
 
@@ -99,9 +99,7 @@ public:
 			vector_points[i].dist = dist;
 		}
 	}
-	inline void SetPosition(double x, double y) {
-		center_point->position = glm::vec2(x, y);
-	}
+
 	//translates every point with x and y
 	inline void Translate(double x, double y) {
 		center_point->position = glm::vec2(x, y);
@@ -124,7 +122,7 @@ public:
 			vector_points[i].point->position = glm::vec2(x, y);
 		}
 	}
-	inline void SetAngle(float angle, bool update = false) {
+	inline void Rotate(float angle, bool update = false) {
 		for (uint64_t i = 0; i < size; ++i) {
 			float ang = (vector_points[i].angle + angle);
 			if (ang >= 2 * pi) ang -= 2 * pi;
@@ -154,21 +152,19 @@ void InitGame(double w, double h) {
 	shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
 	
 	rect = new Shape();
-	rect->SetPosition(w / 2, h / 2);
-
 	vector<pair<float, float>> pp;
 	pp.push_back({w / 2 - 200, h / 2 - 100});
 	pp.push_back({w / 2 + 200, h / 2 - 100});
 	pp.push_back({w / 2 + 200, h / 2 + 100});
 	pp.push_back({w / 2 - 200, h / 2 + 100});
-	rect->Init(pp);
+	rect->Init(w / 2 , h / 2, pp);
 }
 
 //w = window width, h = window height
 void Game(double w, double h) {
 
 	auto time = glfwGetTime();
-	rect->SetAngle(time);
+	rect->Rotate(time);
 	rect->Draw(w, h);
 
 
