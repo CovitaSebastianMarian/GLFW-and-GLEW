@@ -1,7 +1,64 @@
 #pragma once
-//include the class after include glew, glfw, glm, vector and using namespace std
-//use Shader class
-Shader* shader = nullptr;
+
+
+class PointShader {
+public:
+	unsigned int ID;
+	PointShader() {
+		const char* vert_shader =
+			"#version 330 core\n"
+			"layout (location = 0) in vec3 pos;\n"
+			"uniform mat4 model;\n"
+			"void main() { gl_Position = model * vec4(pos, 1.0); }\n";
+
+		const char* frag_shader =
+			"#version 330 core\n"
+			"uniform vec2 pos;\n"
+			"uniform float scale;\n"
+			"uniform vec3 color;\n"
+			"void main() {\n"
+			"	vec2 coord = gl_FragCoord.xy;\n"
+			"	vec4 col;\n"
+			"	if(distance(coord, pos) <= scale) col = vec4(color, 1.);\n"
+			"	gl_FragColor = col;}\n";
+
+		unsigned int vertex, fragment;
+
+		vertex = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertex, 1, &vert_shader, NULL);
+		glCompileShader(vertex);
+
+		fragment = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment, 1, &frag_shader, NULL);
+		glCompileShader(fragment);
+
+		ID = glCreateProgram();
+		glAttachShader(ID, vertex);
+		glAttachShader(ID, fragment);
+		glLinkProgram(ID);
+
+		glDeleteShader(vertex);
+		glDeleteShader(fragment);
+	}
+	void setModel(const glm::mat4& mat) const
+	{
+		glUniformMatrix4fv(glGetUniformLocation(ID, "model"), 1, GL_FALSE, &mat[0][0]);
+	}
+	void setScale(const float value) const
+	{
+		glUniform1f(glGetUniformLocation(ID, "scale"), value);
+	}
+	void setPositions(const glm::vec2& value) const
+	{
+		glUniform2fv(glGetUniformLocation(ID, "pos"), 1, &value[0]);
+	}
+	void setColor(const glm::vec3& value) const
+	{
+		glUniform3fv(glGetUniformLocation(ID, "color"), 1, &value[0]);
+	}
+};
+
+
 
 class Point {
 private:
@@ -27,11 +84,11 @@ public:
 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), (void*)(0 * sizeof(float)));
-		
+
 
 		glBindVertexArray(0);
 	}
-	void Draw(double w, double h) {
+	void Draw(PointShader *shader, double w, double h) {
 		glBindVertexArray(VAO);
 		glUseProgram(shader->ID);
 
@@ -40,13 +97,13 @@ public:
 		model = glm::translate(model, glm::vec3(position, 0));
 		model = glm::scale(model, glm::vec3(scale));
 
-		shader->setMat4("model", model);
+		shader->setModel(model);
 
-		shader->setFloat("scale", scale);
+		shader->setScale(scale);
 		//h - positions.y is used because in glsl shaders use invert y axis
-		shader->setVec2("pos", glm::vec2(position.x, h - position.y));
-		shader->setVec3("color", color);
-		
+		shader->setPositions(glm::vec2(position.x, h - position.y));
+		shader->setColor(color);
+
 		glDrawArrays(GL_QUADS, 0, 4);
 		glUseProgram(0);
 		glBindVertexArray(0);
@@ -74,8 +131,8 @@ private:
 		return sqrt(x * x + y * y);
 	}
 public:
-	Shape() {}
-	
+	Shape() noexcept = default;
+
 	inline void Init(double center_point_x_pos, double center_point_y_pos, vector<pair<float, float>> pos) {
 		this->size = pos.size();
 		vector_points = new vec[size];
@@ -131,42 +188,40 @@ public:
 			double y = cos(ang) * vector_points[i].dist + center_point->position.y;
 
 			vector_points[i].point->position = glm::vec2(x, y);
-			if(update) vector_points[i].angle = ang;
+			if (update) vector_points[i].angle = ang;
 		}
 	}
 
-	inline void Draw(double w, double h) {
+	inline void Draw(PointShader * shader, double w, double h) {
 		for (uint64_t i = 0; i < size; ++i) {
-			vector_points[i].point->Draw(w, h);
+			vector_points[i].point->Draw(shader, w, h);
 		}
-		center_point->Draw(w, h);
+		center_point->Draw(shader, w, h);
 	}
 };
 
-Shape* rect = nullptr;
-Point* p = nullptr;
 
-//w = window width, h = window height
+
+
+PointShader* point_shader = nullptr;
+Shape* rect = nullptr;
+
 void InitGame(double w, double h) {
 
-	shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-	
-	rect = new Shape();
+	point_shader = new PointShader;
+	rect = new Shape;
 	vector<pair<float, float>> pp;
-	pp.push_back({w / 2 - 200, h / 2 - 100});
-	pp.push_back({w / 2 + 200, h / 2 - 100});
-	pp.push_back({w / 2 + 200, h / 2 + 100});
-	pp.push_back({w / 2 - 200, h / 2 + 100});
-	rect->Init(w / 2 , h / 2, pp);
+	pp.push_back({ w / 2 - 200, h / 2 - 100 });
+	pp.push_back({ w / 2 + 200, h / 2 - 100 });
+	pp.push_back({ w / 2 + 200, h / 2 + 100 });
+	pp.push_back({ w / 2 - 200, h / 2 + 100 });
+	rect->Init(w / 2, h / 2, pp);
+
 }
 
-//w = window width, h = window height
 void Game(double w, double h) {
-
 	auto time = glfwGetTime();
 	rect->Rotate(time);
-	rect->Draw(w, h);
-
+	rect->Draw(point_shader, w, h);
 
 }
-
