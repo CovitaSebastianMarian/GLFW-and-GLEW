@@ -67,9 +67,9 @@ auto main(int argc, char** argv) -> int {
 
 
 	
-	Circle2D* cir1 = new Circle2D(6);
+	Form2D* cir1 = new Form2D(6);
 	cir1->Translate(glm::vec2(100, 100));
-	Circle2D* cir2 = new Circle2D(6);
+	Form2D* cir2 = new Form2D(6);
 	cir2->Translate(glm::vec2(200, 100));
 	
 	Box* box = new Box();
