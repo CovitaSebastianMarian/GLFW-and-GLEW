@@ -106,6 +106,7 @@ public:
 	virtual inline void Draw(ShapeShader2D* shader) const {
 		matrix = glm::ortho<double>(ortho.x, ortho.y, ortho.z, ortho.w, 0, 0.1);
 		matrix = glm::translate(matrix, glm::vec3(this->position, 0));
+		while (this->angle >= 360.f) this->angle -= 360.f;
 		matrix = glm::rotate(matrix, glm::radians(this->angle), glm::vec3(0, 0, 1));
 		matrix = glm::scale(matrix, glm::vec3(this->scale, 0));
 
@@ -141,7 +142,7 @@ public:
 			float xx = position.x - point.x;
 			float yy = position.y - point.y;
 
-			float ang = this->angle * pi / 180.f;
+			float ang = angle * pi / 180.f;
 
 			float x = cos(ang) * xx - sin(ang) * yy + point.x;
 			float y = sin(ang) * xx + cos(ang) * yy + point.y;
@@ -155,7 +156,7 @@ public:
 			float xx = position.x - point.x;
 			float yy = position.y - point.y;
 			
-			float ang = this->angle * pi / 180.f;
+			float ang = angle * pi / 180.f;
 
 			float x = cos(ang) * xx - sin(ang) * yy + point.x;
 			float y = sin(ang) * xx + cos(ang) * yy + point.y;
@@ -245,11 +246,9 @@ private:
 
 
 
-
-
-class Circle2D : public Shape2D {
+class Form2D : public Shape2D {
 public:
-	Circle2D(uint16_t points) {
+	Form2D(uint16_t points) {
 		float jump = 360.0f / float(points);
 		vertices = new float[4 * (points + 1)];
 		indices = new uint32_t[3 * (points)];
@@ -309,5 +308,3 @@ public:
 		glBindVertexArray(NULL);
 	}
 };
-
-
