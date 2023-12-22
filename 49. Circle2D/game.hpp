@@ -30,8 +30,7 @@ Box -> va contine mai multe poligoane si se va comporta ca o singura forma
 */
 
 
-#define NODISCARD [[nodiscard]]
-#define mut mutable
+
 
 inline void LoadTexture(uint32_t *texture, const char * file, const int32_t internalformat) {
 	int32_t width, height, nrChannels;
@@ -71,27 +70,27 @@ public:
 		const char* frag_shader =
 			"#version 330 core\n"
 			"in vec2 tcoord;\n"
-			"uniform sampler2D Texture;\n"
-			"void main() { gl_FragColor = texture(Texture, tcoord); }\n";
+			"uniform sampler2D set_texture;\n"
+			"void main() { gl_FragColor = texture(set_texture, tcoord); }\n";
 
 
-		unsigned int vertex, fragment;
+		GLuint vertex, fragment;
+
+		id = glCreateProgram();
 
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vert_shader, NULL);
 		glCompileShader(vertex);
+		glAttachShader(id, vertex);
+		glDeleteShader(vertex);
 
 		fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &frag_shader, NULL);
 		glCompileShader(fragment);
-
-		id = glCreateProgram();
-		glAttachShader(id, vertex);
 		glAttachShader(id, fragment);
-		glLinkProgram(id);
-
-		glDeleteShader(vertex);
 		glDeleteShader(fragment);
+
+		glLinkProgram(id);
 	}
 	uint32_t id;
 	inline void set_matrix(const glm::mat4 mat) const {
@@ -100,17 +99,73 @@ public:
 };
 
 
+/*
+*  Shape2D -> Pipeline2D -> Form2D
+*          				 -> ...
+*/
 
 class Shape2D {
 public:
-	virtual inline void Draw(ShapeShader2D* shader) const {
-		matrix = glm::ortho<double>(ortho.x, ortho.y, ortho.z, ortho.w, 0, 0.1);
+	inline glm::vec2 get_position() const {
+		return position;
+	}
+	inline glm::mat4 get_matrix() const {
+		return matrix;
+	}
+	inline glm::vec2 get_scale() const {
+		return scale;
+	}
+	inline float get_angle() const {
+		return angle;
+	}
+	inline float* get_vertices() const {
+		return vertices.get();
+	}
+	inline uint64_t get_vertices_size() const {
+		return vertices_size;
+	}
+	inline uint32_t* get_indices() const {
+		return indices.get();
+	}
+	inline uint32_t get_indices_size() const {
+		return indices_size;
+	}
+	inline uint32_t get_texture() const {
+		return texture;
+	}
+	inline void load_matrix() const {
+		matrix = glm::ortho<double>(orthographic.x, orthographic.y, orthographic.z, orthographic.w, 0, 0.1);
 		matrix = glm::translate(matrix, glm::vec3(this->position, 0));
 		while (this->angle >= 360.f) this->angle -= 360.f;
 		matrix = glm::rotate(matrix, glm::radians(this->angle), glm::vec3(0, 0, 1));
 		matrix = glm::scale(matrix, glm::vec3(this->scale, 0));
+	}
+protected:
+	const float pi = 3.14159265359f;
+
+	uint32_t VAO, VBO, EBO;
+	unique_ptr<float[]> vertices;
+	unique_ptr<uint32_t[]> indices;
+
+	uint32_t indices_size = 0U;
+	uint64_t vertices_size = 0ULL;
+
+	mutable glm::vec4 orthographic = glm::vec4(0);
+	mutable glm::vec2 position = glm::vec2(0);
+	mutable float angle = 0.f;
+	mutable glm::vec2 scale = glm::vec2(0);
+	mutable uint32_t texture = 0U;
+	mutable glm::mat4 matrix = glm::mat4(1);
+};
 
 
+
+class Pipeline2D : public Shape2D {
+public:
+	virtual inline void draw(ShapeShader2D* shader, GLenum mode = GL_TRIANGLES) const {
+		
+		load_matrix();
+		
 		glUseProgram(shader->id);
 
 		shader->set_matrix(matrix);
@@ -119,23 +174,22 @@ public:
 		glBindTexture(GL_TEXTURE_2D, texture);
 		glBindVertexArray(VAO);
 
-
-		glDrawElements(GL_TRIANGLES, indices_size, GL_UNSIGNED_INT, NULL);
+		glDrawElements(mode, indices_size, GL_UNSIGNED_INT, NULL);
 
 		glBindVertexArray(NULL);
 		glBindTexture(GL_TEXTURE_2D, NULL);
 		glUseProgram(NULL);
 	}
-	virtual inline void Ortho(const double left, const double right, const double bottom, const double top) const {
-		this->ortho = glm::vec4(left, right, bottom, top);
+	virtual inline void set_orthographic(const double left, const double right, const double bottom, const double top) const {
+		this->orthographic = glm::vec4(left, right, bottom, top);
 	}
-	virtual inline void Translate(const glm::vec2& position) const {
+	virtual inline void set_position(const glm::vec2& position) const {
 		this->position = position;
 	}
-	virtual inline void Move(const glm::vec2& position) const {
+	virtual inline void move(const glm::vec2& position) const {
 		this->position += position;
 	}
-	virtual inline void Angle(const float& angle, bool use_another_point = false , glm::vec2 point = glm::vec2(0)) const {
+	virtual inline void set_angle(const float& angle, bool use_another_point = false , glm::vec2 point = glm::vec2(0)) const {
 		this->angle = angle;
 
 		if (use_another_point) {
@@ -149,7 +203,7 @@ public:
 			position = glm::vec2(x, y);
 		}
 	}
-	virtual inline void Rotate(const float& angle, bool use_another_point = false, glm::vec2 point = glm::vec2(0)) const {
+	virtual inline void rotate(const float& angle, bool use_another_point = false, glm::vec2 point = glm::vec2(0)) const {
 		this->angle += angle;
 
 		if (use_another_point) {
@@ -163,95 +217,86 @@ public:
 			position = glm::vec2(x, y);
 		}
 	}
-	virtual inline void Scale(const glm::vec2 scale) const {
+	virtual inline void set_scale(const glm::vec2 scale) const {
 		this->scale = scale;
 	}
-	virtual inline void Texture(const char* file, const int32_t internalformat) const {
+	virtual inline void set_texture(const char* file, const int32_t internalformat) const {
 		LoadTexture(&texture, file, internalformat);
 	}
-protected:
-	const float pi = 3.14159265359f;
-
-	uint32_t VAO, VBO, EBO;
-	float* vertices = nullptr;
-	uint32_t* indices = nullptr;
-	uint32_t indices_size = 0U;
-	uint64_t vertices_size = 0ULL;
-
-	mut glm::vec4 ortho = glm::vec4(0);
-	mut glm::vec2 position = glm::vec2(0);
-	mut float angle = 0.f;
-	mut glm::vec2 scale = glm::vec2(0);
-	mut uint32_t texture = 0U;
-	mut glm::mat4 matrix = glm::mat4(1);
 };
 
 
-class Box : public Shape2D {
+class Box {
 public:
 	Box() noexcept = default;
 	~Box() {
 		vbox.clear();
 	}
-	inline void Draw(ShapeShader2D* shader) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Draw(shader);
+	inline void draw(ShapeShader2D* shader, GLenum mode = GL_TRIANGLES) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->draw(shader, mode);
 		}
 	}
-	inline void Ortho(const double left, const double right, const double bottom, const double top) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Ortho(left, right, bottom, top);
+	inline void set_orthographic(const double left, const double right, const double bottom, const double top) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->set_orthographic(left, right, bottom, top);
 		}
 	}
-	inline void Translate(const glm::vec2& pos) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Translate(pos);
+	inline void set_position(const glm::vec2& pos) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->set_position(pos);
 		}
 	}
-	inline void Move(const glm::vec2& pos) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Move(pos);
+	inline void move(const glm::vec2& pos) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->move(pos);
 		}
 	}
-	inline void Angle(const float& angle, bool use_another_point = false,  glm::vec2 point = glm::vec2(0)) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Angle(angle, use_another_point, point);
+	inline void set_angle(const float& angle, bool use_another_point = false,  glm::vec2 point = glm::vec2(0)) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->set_angle(angle, use_another_point, point);
 		}
 	}
-	inline void Rotate(const float& angle, bool use_another_point = false,  glm::vec2 point = glm::vec2(0)) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Rotate(angle, use_another_point, point);
+	inline void rotate(const float& angle, bool use_another_point = false,  glm::vec2 point = glm::vec2(0)) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->rotate(angle, use_another_point, point);
 		}
 	}
-	inline void Scale(const glm::vec2 scale) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Scale(scale);
+	inline void set_scale(const glm::vec2 scale) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->set_scale(scale);
 		}
 	}
-	inline void Texture(const char* file, const int32_t internalformat) const override {
-		for (Shape2D* sh : vbox) {
-			sh->Texture(file, internalformat);
+	inline void set_texture(const char* file, const int32_t internalformat) const  {
+		for (Pipeline2D* sh : vbox) {
+			sh->set_texture(file, internalformat);
 		}
 	}
-	inline void Push(Shape2D* shape) const {
-		vbox.push_back(shape);
+	inline void push(Pipeline2D* form) const {
+		vbox.push_back(form);
+	}
+	inline Pipeline2D* operator[](uint64_t index) const {
+		return vbox[index];
+	}
+	inline vector<Pipeline2D*> get_pipeline2D_container() const {
+		return vbox;
 	}
 private:
-	mutable vector<Shape2D*> vbox;
+	mutable vector<Pipeline2D*> vbox;
 };
 
 
 
 
 
-
-
-class Form2D : public Shape2D {
+class Form2D : public Pipeline2D {
 public:
 	Form2D(uint16_t points) {
 		float jump = 360.0f / float(points);
-		vertices = new float[4 * (points + 1)];
-		indices = new uint32_t[3 * (points)];
+
+		vertices = make_unique<float[]>(static_cast<uint64_t>(4 * (points + 1)));
+		indices = make_unique<uint32_t[]>(static_cast<uint64_t>(3 * points));
+
 		vertices[0] = 0.0f;
 		vertices[1] = 0.0f;
 		vertices[2] = 0.5f;
@@ -259,7 +304,6 @@ public:
 		uint32_t vertices_index = 3U;
 		int32_t indices_index = -1;
 		uint32_t index = 1U;
-
 
 		for (float i = 0; i < 360.f; i += jump, ++index) {
 			float delta = (i * pi) / 180.0f;
@@ -285,7 +329,6 @@ public:
 		indices_size = indices_index + 1;
 		vertices_size = vertices_index + 1;
 	
-		
 
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
@@ -294,10 +337,10 @@ public:
 		glBindVertexArray(VAO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, vertices_size * sizeof(float), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertices_size * sizeof(float), vertices.get(), GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_size * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_size * sizeof(uint32_t), indices.get(), GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(0));
@@ -307,4 +350,9 @@ public:
 
 		glBindVertexArray(NULL);
 	}
+	~Form2D() {
+		vertices.release();
+		indices.release();
+	}
 };
+
