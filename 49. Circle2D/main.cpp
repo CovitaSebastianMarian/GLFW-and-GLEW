@@ -1,6 +1,5 @@
 #include "Engine/Library.h"
-#include "game.hpp"
-#include <thread>
+#include "2D.hpp"
 
 double WindowHeight = 700;
 double WindowWidth = 1200;
@@ -26,7 +25,7 @@ void mousebutton(GLFWwindow * window, int button, int action, int mods) {
 
 
 
-auto main(int argc, char** argv) -> int {
+int main() {
 	//srand(time(0));
 	if (!glfwInit()) return -1;
 
@@ -64,30 +63,34 @@ auto main(int argc, char** argv) -> int {
 	ImGui_ImplOpenGL3_Init("#version 330");
 
 
-
-
-	
-	Form2D* cir1 = new Form2D(6);
-	cir1->Translate(glm::vec2(100, 100));
-	Form2D* cir2 = new Form2D(6);
-	cir2->Translate(glm::vec2(200, 100));
-	
-	Box* box = new Box();
-	box->Push(cir1);
-	box->Push(cir2);
-
-	ShapeShader2D* sh = new ShapeShader2D();
-
-
-	box->Texture("Images/concreate.jpg", GL_RGB);
-	box->Ortho(0, WindowWidth, WindowHeight, 0);
-	box->Scale({ 50, 50 });
-	
-	
-
 	
 
 
+
+	
+
+	auto sh = make_unique<ShapeShader2D>();
+
+	auto form = make_unique<Form2D>(36);
+	form->set_orthographic(0, WindowWidth, WindowHeight, 0);
+	form->set_texture("Images/concreate.jpg", GL_RGB);
+	form->set_position({ WindowWidth / 2, WindowHeight / 2});
+	form->set_scale({ 300, 300 });
+
+
+
+	form->load_matrix();
+	float x = form->get_vertices()[4];
+	float y = form->get_vertices()[5];
+	glm::vec4 pos = glm::vec4(x, y, 0, 1);
+	pos = form->get_matrix() * pos;
+	pos.x = (pos.x + 1) * WindowWidth / 2;
+	pos.y = (pos.y + 1) * WindowHeight / 2;
+	pos.y = WindowHeight - pos.y;
+
+
+
+	
 	while (!glfwWindowShouldClose(window)) {
 		glClearColor(0, 0, 0.2, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -96,18 +99,23 @@ auto main(int argc, char** argv) -> int {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		//box->Move({ 1, 0 });
-		box->Angle(1, true, { 300, 300 });
-		box->Draw(sh);
 
+		
+		
+		form->rotate(sin(glfwGetTime()), true, {pos.x, pos.y});
+		form->draw(sh.get());
+
+		
+
+		
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
 	}
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
