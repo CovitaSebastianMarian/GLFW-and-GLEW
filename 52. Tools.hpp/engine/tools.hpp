@@ -298,10 +298,24 @@ namespace seb {
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         }
+        SEBCALL inline void nondsa_update_vertex_buffer(unsigned int vbo_id, unsigned short _size, unsigned int usage) const {
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO[vbo_id]);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, vbo_data[vbo_id].size() * sizeof(float), vbo_data[vbo_id].data());
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
         SEBCALL inline void nondsa_initialize_elements_buffer(unsigned int usage) const {
             glBindVertexArray(VAO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, ebo_data.size() * sizeof(unsigned int), ebo_data.data(), usage);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+        SEBCALL inline void nondsa_update_elements_buffer(unsigned int usage) const {
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, ebo_data.size() * sizeof(unsigned int), ebo_data.data());
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
         }
@@ -312,9 +326,15 @@ namespace seb {
             glVertexArrayAttribBinding(VAO, vbo_id, vbo_id);
             glVertexArrayVertexBuffer(VAO, vbo_id, VBO[vbo_id], 0, _size * sizeof(float));
         }
+        SEBCALL inline void dsa_update_vertex_buffer(unsigned int vbo_id, unsigned short _size, unsigned int usage) const {
+            glNamedBufferSubData(VBO[vbo_id], 0, vbo_data[vbo_id].size() * sizeof(float), vbo_data[vbo_id].data());
+        }
         SEBCALL inline void dsa_initialize_elements_buffer(unsigned int usage) const {
             glNamedBufferData(EBO, ebo_data.size() * sizeof(unsigned int), ebo_data.data(), usage);
             glVertexArrayElementBuffer(VAO, EBO);
+        }
+        SEBCALL inline void dsa_update_elements_buffer(unsigned int usage) const {
+            glNamedBufferSubData(EBO, 0, ebo_data.size() * sizeof(unsigned int), ebo_data.data());
         }
     };
 
@@ -326,14 +346,14 @@ namespace seb {
             PhysicObject phobj;
             phobj.obj = obj;
             //points.resize(obj.get_vbo_data(index).size() / 2);
-            for(auto it = obj.get_vbo_data(index).begin(); it != obj.get_vbo_data(index).end();it += 2) {
+            for (auto it = obj.get_vbo_data(index).begin(); it != obj.get_vbo_data(index).end();it += 2) {
                 phobj.points.emplace_back(glm::vec2(*it, *(it + 1)));
             }
             physic_objects.push_back(phobj);
         }
     private:
         mutable std::set<unsigned int> colision_map[width][height];
-        struct PhysicObject{
+        struct PhysicObject {
             PhysicObject();
             mutable std::vector<glm::vec2> points;
             mutable Object2D& obj;
